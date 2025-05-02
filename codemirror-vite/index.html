@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CodeMirror with Vite</title>
+  <link rel="stylesheet" href="/node_modules/@codemirror/theme-one-dark/style.css">
+
+  <style>
+    #editor {
+      width: 100%;
+      height: 90vh;
+      border: 1px solid #ccc;
+    }
+    </style>
+</head>
+<body>
+  <h1>CodeMirror 6 with Vite</h1>
+  <div id="editor" style="height: 300px;"></div>
+  <script type="module" src="/src/main.js"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+  <button id="setCodeBtn">設定程式碼</button>
+  <button id="getCodeBtn">取得程式碼</button> 
+  <button id="getSelectedSectionBtn">取得選取的段落</button>
+  <button id="getSelectedLineBtn">取得選取的行號</button>
+
+  <input type="text" id="startTxt">~
+  <input type="text" id="endTxt">
+
+  <button id="getRangeBtn">依照指定行數取得程式</button>
+
+</body>
+</html>

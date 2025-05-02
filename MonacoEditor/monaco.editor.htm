@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <title>Monaco</title>
+  <style>
+    #editor-container {
+      width: 100%;
+      height: 90vh;
+      border: 1px solid #ccc;
+    }
+
+    .myDecoration {
+      text-decoration: underline wavy red;
+      background-color: rgba(255, 0, 0, 0.1);
+    }
+  </style>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"></script>
+</head>
+
+<body>
+  <button id="setCodeBtn">設定程式碼</button>
+  <button id="getCodeBtn">取得程式碼</button>
+  <button id="getSelectedSectionBtn">取得選取的段落</button>
+  <button id="getSelectedLineBtn">取得選取的行號</button>
+
+  <input type="text" id="startTxt">~
+  <input type="text" id="endTxt">
+
+  <button id="getRangeBtn">依照指定行數取得程式</button>
+
+  <button id="markCode">標註程式碼 1</button>
+
+  <button id="descCode">標註程式碼 2</button>
+  <p></p>
+
+  <div id="editor-container"></div>
+
+
+  <script>
+    let editor;
+
+    // 載入 Monaco
+    require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs' } });
+    require(['vs/editor/editor.main'], function () {
+      editor = monaco.editor.create(document.getElementById('editor-container'), {
+        value: '',
+        language: 'javascript',
+        theme: 'vs',
+        formatOnPaste: true,
+        formatOnType: true
+      });
+    });
+
+    $("#setCodeBtn").click(function (e) {
+      e.preventDefault();
+      const code = `
+       function HelloWorld() {
+          alert(Hello("World"))
+        }
+
+          function Hello(text) {
+          alert("Hello "+text);
+        }`;
+
+      editor.setValue(code);
+      editor.getAction('editor.action.formatDocument').run();
+    });
+
+    $('#getCodeBtn').click(function (e) {
+      e.preventDefault();
+      const code = editor.getValue();
+      alert("你輸入的程式碼是：\n" + code);
+    });
+
+    $("#getSelectedSectionBtn").click(function (e) {
+      e.preventDefault();
+      // endLineNumber
+      // 
+      const selection = editor.getSelection();
+      const model = editor.getModel();
+
+      alert("您選取的程式碼：\n" + model.getValueInRange(selection));
+      debugger;
+    });
+
+
+    $("#getSelectedLineBtn").click(function (e) {
+      e.preventDefault();
+      const selection = editor.getSelection();
+      debugger;
+      const line = {
+        start: selection.startLineNumber,
+        end: selection.endLineNumber
+      }
+
+      alert(JSON.stringify(line));
+
+    });
+
+    $("#getRangeBtn").click(function (e) {
+      e.preventDefault();
+
+      const model = editor.getModel();
+
+      const start = parseInt($("#startTxt").val());
+      const end = parseInt($("#endTxt").val());
+
+      debugger
+      const range = {
+        startLineNumber: start,
+        endLineNumber: end,
+        selectionStartColumn: 1,
+        endColumn: model.getLineMaxColumn(start)
+      }
+
+      alert("您選取的程式碼：\n" + model.getValueInRange(range));
+
+    });
+
+    $("#markCode").click(function (e) {
+      e.preventDefault();
+
+      const decorations = editor.deltaDecorations([], [
+        {
+          range: new monaco.Range(3, 5, 3, 100),  //startLineNumber, startColumn, endLineNumber, endColumn
+          options: {
+            //isWholeLine: true,
+            inlineClassName: 'myDecoration', // 這個 class 可自定義樣式
+            hoverMessage: { value: '⚠️ 這行結尾少了分號' }
+          }
+        }
+      ]);
+
+      
+
+    });
+ 
+    $("#descCode").click(function (e) { 
+      e.preventDefault();
+      
+      const myWidget = {
+        domNode: null,
+        getId: function () {
+          return 'my.custom.widget';
+        },
+        getDomNode: function () {
+          if (!this.domNode) {
+            this.domNode = document.createElement('div');
+            this.domNode.innerText = `參數名稱建議可以改成 showText`;
+            this.domNode.style.background = '#fdf6e3';
+            this.domNode.style.border = '1px solid #ccc';
+            this.domNode.style.padding = '8px';
+            this.domNode.style.borderRadius = '6px';
+            this.domNode.style.maxWidth = '300px';       // 限制最大寬度
+            this.domNode.style.whiteSpace = 'pre-wrap';  // 保留空白和換行，自動換行
+            this.domNode.style.wordBreak = 'break-word'; // 太長的字也會斷行
+            this.domNode.style.width = '250px'
+            this.domNode.style.boxShadow = '0 2px 6px rgba(0,0,0,0.2)';
+            this.domNode.style.marginLeft = '50px';
+          }
+          return this.domNode;
+        },
+        getPosition: function () {
+          return {
+            position: { lineNumber: 6, column: 1000 }, // 想要插入的位置
+            preference: [monaco.editor.ContentWidgetPositionPreference.EXACT]
+          };
+        }
+      };
+
+      editor.addContentWidget(myWidget);
+
+    });
+ </script>
+
+</body>
+
+</html>
