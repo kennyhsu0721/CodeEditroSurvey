@@ -12,13 +12,15 @@
       height: 90vh;
       border: 1px solid #ccc;
     }
+
+    .cm-annotation {
+      text-decoration: underline wavy red;
+      background-color: rgba(255, 0, 0, 0.1);
+    }
     </style>
 </head>
 <body>
   <h1>CodeMirror 6 with Vite</h1>
-  <div id="editor" style="height: 300px;"></div>
-  <script type="module" src="/src/main.js"></script>
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
   <button id="setCodeBtn">設定程式碼</button>
   <button id="getCodeBtn">取得程式碼</button> 
@@ -29,6 +31,15 @@
   <input type="text" id="endTxt">
 
   <button id="getRangeBtn">依照指定行數取得程式</button>
+
+  <button id="markCode">標註程式碼 1</button>
+  <button id="descCode">標註程式碼 2</button>
+  <p></p>
+  <div id="editor" style="height: 300px;"></div>
+  <script type="module" src="/src/main.js"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
 
 </body>
 </html>

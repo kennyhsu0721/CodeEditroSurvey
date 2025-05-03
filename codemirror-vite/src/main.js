@@ -1,10 +1,58 @@
-import { EditorState } from "@codemirror/state";
+import { EditorState,StateEffect,StateField } from "@codemirror/state";
 import { EditorView, keymap, highlightSpecialChars, drawSelection } from "@codemirror/view";
 import { defaultHighlightStyle, syntaxHighlighting, indentOnInput, indentRange } from "@codemirror/language";
 import { history, historyKeymap } from "@codemirror/commands";
-import { lineNumbers, highlightActiveLineGutter } from "@codemirror/view";
+import { lineNumbers, highlightActiveLineGutter,Decoration,ViewPlugin  } from "@codemirror/view";
 import { defaultKeymap, indentWithTab } from "@codemirror/commands";
 import { javascript } from "@codemirror/lang-javascript";
+
+
+  const setAnnotationsEffect = StateEffect.define();
+  const setLineEffect = StateEffect.define();
+  const setWidgetEffect = StateEffect.define();
+
+
+  // 定義 StateField 來儲存 Decoration（標註資料）
+  const annotationField = StateField.define({
+    create() {
+      return Decoration.none;
+    },
+    update(deco, tr) {
+      for (let e of tr.effects) {
+        if (e.is(setAnnotationsEffect)) {
+          return e.value;
+        }
+      }
+      return deco.map(tr.changes);
+    },
+    provide: f => EditorView.decorations.from(f)
+  });
+
+  const lineField = StateField.define({
+    create() {
+      return Decoration.none;
+    },
+    update(deco, tr) {
+      for (let e of tr.effects) {
+        if (e.is(setLineEffect)) return e.value;
+      }
+      return deco.map(tr.changes);
+    },
+    provide: f => EditorView.decorations.from(f)
+  });
+
+  const widgetField = StateField.define({
+    create() {
+      return Decoration.none;
+    },
+    update(deco, tr) {
+      for (let e of tr.effects) {
+        if (e.is(setWidgetEffect)) return e.value;
+      }
+      return deco.map(tr.changes);
+    },
+    provide: f => EditorView.decorations.from(f)
+  });
 
 const editor = new EditorView({
   state: EditorState.create({
@@ -22,7 +70,7 @@ const editor = new EditorView({
         ...defaultKeymap,
         ...historyKeymap
       ]),
-      javascript() // 支援 JS 語法
+      javascript(),annotationField,lineField,widgetField // 支援 JS 語法
     ]
   }),
   parent: document.getElementById("editor")
@@ -34,6 +82,7 @@ $(document).ready(function () {
 
   $("#setCodeBtn").click(function (e) {
     e.preventDefault();
+
 
 
     editor.dispatch({
@@ -49,7 +98,6 @@ function Hello(text) {
 }`  // 你要的新內容
       }
     });
-
 
   });
 
@@ -96,5 +144,53 @@ function Hello(text) {
     const code = editor.state.doc.sliceString(startPos, endPos);
     debugger;
     alert(`從第 ${start} 行到第 ${end} 行的程式碼：${code}`);
+  });
+
+  $("#markCode").click(function (e) { 
+    e.preventDefault();
+    debugger
+
+    const decoList = [];
+    const deco = Decoration.mark({
+      class: "cm-annotation",
+      attributes: { title: "這段少了分號" }
+    });
+
+     decoList.push(deco.range(23,47));
+
+     editor.dispatch({
+      effects:setAnnotationsEffect.of(Decoration.set(decoList))
+     })
+    // const line = editor.state.doc.line(1);
+    // const deco=Decoration.line({
+    //   class:"cm-annotation",
+    //   attributes: { "data-info": "提示文字" }
+    // }).range(line.from);
+
+    // editor.dispatch({
+    //   effects: setLineEffect.of(Decoration.set([deco]))
+    // });
+  });
+
+  $("#descCode").click(function (e) { 
+    e.preventDefault();
+    
+    const deco = Decoration.widget({
+      widget: {
+        toDOM() {
+          const el = document.createElement("div");
+          el.textContent = "這行少了分號";
+          el.style = "display:inline-block; margin-left:8px; color: gray; font-size: 0.9em;";
+          el.style.background = '#fdf6e3';
+          return el;
+        },
+        side: 1  // 插入右邊
+      }
+    }).range(47); // 插在 console 後
+
+    editor.dispatch({
+      effects: setWidgetEffect.of(Decoration.set([deco]))
+    });
+
   });
 });
